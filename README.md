@@ -10,16 +10,15 @@ Powershell module wrapping Spoonium CLI
 ```powershell
 PS C:\> Get-SpoonImage | ? Name -Like *scratch | Start-SpoonContainer
 
-ContainerID                                                                                         ExitCode                                                                                           
------------                                                                                         --------                                                                                           
-03887d95013a4ff9af50a498ab594646                                                                    0x0       
+ContainerID                                   ExitCode                                                                                           
+-----------                                   --------                                                                                           
+03887d95013a4ff9af50a498ab594646              0x0       
 ```
 
 #### Pull down an image from [spoonium.net](http://spoonium.net)
 
 ```powershell
 PS C:\> Connect-SpoonUser -Credential (Get-Credential) -Verbose
-
 VERBOSE: Logged in as username
 
 PS C:\> Import-SpoonImage spoonbrew/scratch -Verbose
