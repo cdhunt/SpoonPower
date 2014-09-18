@@ -10,7 +10,7 @@ Powershell module wrapping Spoonium CLI
 ```powershell
 PS C:\> Get-SpoonImage | ? Name -Like *scratch | Start-SpoonContainer
 
-ContainerID                                   ExitCode                                                                                           
+ID                                            ExitCode                                                                                           
 -----------                                   --------                                                                                           
 03887d95013a4ff9af50a498ab594646              0x0       
 ```
