@@ -1,13 +1,14 @@
 
 <#
 .Synopsis
-   Short description
+   Log a user into the current remote registry.
 .DESCRIPTION
-   Long description
+   This is equivalent of 'spoon login'
 .EXAMPLE
-   Example of how to use this cmdlet
-.EXAMPLE
-   Another example of how to use this cmdlet
+   PS C:\> Connect-SpoonUser -Credential (Get-Credential) -Verbose
+	VERBOSE: Logged in as username
+.LINK
+	https://spoonium.net/docs/reference#command-line-login
 #>
 function Connect-SpoonUser
 {
@@ -15,7 +16,7 @@ function Connect-SpoonUser
     [OutputType([Void])]
     Param
     (
-        # Param1 help description
+        # Spoonium.net Username and Password as a PSCredential object
         [Parameter()]
         [PSCredential]
         $Credential = (Get-Credential)
@@ -40,21 +41,20 @@ function Connect-SpoonUser
 
 <#
 .Synopsis
-   Short description
+   Log the current user out of the remote registry.
 .DESCRIPTION
-   Long description
+   This is equivalent of 'spoon logout'
 .EXAMPLE
-   Example of how to use this cmdlet
-.EXAMPLE
-   Another example of how to use this cmdlet
+   PS C:\> Connect-SpoonUser -Verbose
+   VERBOSE: username logged out at 9/18/2014 1:27:44 PM
+.LINK
+	https://spoonium.net/docs/reference#command-line-logout
 #>
 function Disconnect-SpoonUser
 {
     [CmdletBinding()]
     [OutputType([Void])]
-    Param
-    (
-    )
+    Param()
 
     $command = "spoon logout"
 
@@ -72,26 +72,28 @@ function Disconnect-SpoonUser
 
 <#
 .Synopsis
-   Short description
+   Lists all of the images present in the local registry.
 .DESCRIPTION
-   Long description
+   This is equivalent of 'spoon images'. The output is converted to PSCustomObjects.
 .EXAMPLE
-   Example of how to use this cmdlet
-.EXAMPLE
-   Another example of how to use this cmdlet
+   PS C:\temp> Get-SpoonImage | ? Name -like *scratch
+
+	ID            : 16764d02a099
+	Name          : spoonbrew/scratch
+	Tag           :
+	Created       : 8/27/2014 8:04:38 PM
+	Size          : 0.0MB
+	Startup files :
+	Settings      : SpawnVm
+	Registered    : No
+.LINK
+	https://spoonium.net/docs/reference#command-line-images
 #>
 function Get-SpoonImage
 {
     [CmdletBinding()]
     [OutputType([System.Management.Automation.PSCustomObject])]
-    Param
-    (
-        # Param1 help description
-        [Parameter()]
-        [Switch]
-        $Latest
-    )
-
+    Param()
 
     $command = "spoon images --csv"
 
@@ -103,13 +105,19 @@ function Get-SpoonImage
 
 <#
 .Synopsis
-   Short description
+   Syncs an image from a remote registry to your local registry.
 .DESCRIPTION
-   Long description
+   This is equivalent of 'spoon pull'. 
+
+   The image to pull can be specified with up to 3 identifiers, only 1 of which (the name) is mandatory
 .EXAMPLE
-   Example of how to use this cmdlet
+   PS C:\> Import-SpoonImage spoonbrew/scratch -Verbose
+   VERBOSE: Pull complete
 .EXAMPLE
-   Another example of how to use this cmdlet
+   PS C:\> Import-SpoonImage -Name scratch -Namespace spoonbrew -Verbose
+   VERBOSE: Pull complete
+.LINK
+	https://spoonium.net/docs/reference#command-line-pull
 #>
 function Import-SpoonImage
 {
@@ -117,17 +125,17 @@ function Import-SpoonImage
     [OutputType([Void])]
     Param
     (
-        # Param1 help description
+        # Name of the remote repository
         [Parameter(Mandatory, Position=0)]
         [string]
         $Name,
 
-        # Param1 help description
+        # Namespace (user or org on the remote hub)
         [Parameter(Position=1)]
         [string]
         $Namespace,
 
-        # Param1 help description
+        # Tag
         [Parameter(Position=2)]
         [string]
         $Tag
@@ -154,13 +162,59 @@ function Import-SpoonImage
 
 <#
 .Synopsis
-   Short description
+   Builds an image from a container.
 .DESCRIPTION
-   Long description
+   This is equivalent of 'spoon commit'.
+
+   The image is built from the container's most recent state.
 .EXAMPLE
-   Example of how to use this cmdlet
+   TODO
+.NOTE
+	A container must be stopped before it can be committed to an image.
+.LINK
+	https://spoonium.net/docs/reference#command-line-commit
+#>
+function Convert-SpoonContainerToImage
+{
+    [CmdletBinding()]
+    [OutputType([Void])]
+    Param
+    (
+        # Container ID
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName,Position=0)]
+        $ID,
+
+        # Name of the image
+		[Parameter(Mandatory,Position=1)]
+        [string]
+        $Name,
+
+		# Overwrite            
+		[Parameter()]
+        [switch]
+        $Force
+    )
+
+	$command = "spoon commit $_ $Name"
+
+	$stringdata = Invoke-Expression $command
+
+	Write-Verbose $stringdata
+}
+
+<#
+.Synopsis
+   Start a new container with an specified image.
+.DESCRIPTION
+   This is equivalent of 'spoon run'.
+
+   The image to run can be specified with up to 3 identifiers, only 1 of which (the name) is mandatory
 .EXAMPLE
-   Another example of how to use this cmdlet
+   PS C:\> Get-SpoonImage | ? Name -Like *scratch | Start-SpoonContainer
+
+	ID                                            ExitCode                                                                                           
+	-----------                                   --------                                                                                           
+	03887d95013a4ff9af50a498ab594646              0x0      
 #>
 function Start-SpoonContainer
 {
@@ -168,17 +222,17 @@ function Start-SpoonContainer
     [OutputType([System.Management.Automation.PSCustomObject])]
     Param
     (
-        # Param1 help description
+        # Name of the local repository
         [Parameter(Mandatory, Position=0, ValueFromPipelineByPropertyName)]
         [string]
         $Name,
 
-        # Param1 help description
+        # Namespace (user or org)
         [Parameter(Position=1)]
         [string]
         $Namespace,
 
-        # Param1 help description
+        # Tag
         [Parameter(Position=2)]
         [string]
         $Tag
@@ -200,20 +254,20 @@ function Start-SpoonContainer
 
     $stringdata = Invoke-Expression $command
 
-	Write-Output ([PSCustomObject]@{ContainerID = $stringdata[0]
+	Write-Output ([PSCustomObject]@{ID = $stringdata[0]
 									ExitCode = $stringdata[1].Split(' ')[-1]}
 				 )    
 }
 
 <#
 .Synopsis
-   Short description
+   Lists all containers on the local machine.
 .DESCRIPTION
-   Long description
+   This is equivalent of 'spoon containers'.
 .EXAMPLE
-   Example of how to use this cmdlet
-.EXAMPLE
-   Another example of how to use this cmdlet
+   TODO
+.LINK
+	https://spoonium.net/docs/reference#command-line-containers
 #>
 function Get-SpoonContainer
 {
@@ -221,7 +275,7 @@ function Get-SpoonContainer
     [OutputType([System.Management.Automation.PSCustomObject])]
     Param
     (
-        # Param1 help description
+        # List the most recently created container
         [Parameter()]
         [Switch]
         $Latest
@@ -230,35 +284,10 @@ function Get-SpoonContainer
 
     $command = "spoon containers --csv"
 
-    $stringdata = Invoke-Expression $command
-
-    $stringdata | ConvertFrom-Csv -Delimiter "`t"
-}
-
-<#
-.Synopsis
-   Short description
-.DESCRIPTION
-   Long description
-.EXAMPLE
-   Example of how to use this cmdlet
-.EXAMPLE
-   Another example of how to use this cmdlet
-#>
-function Get-SpoonContainers
-{
-    [CmdletBinding()]
-    [OutputType([System.Management.Automation.PSCustomObject])]
-    Param
-    (
-        # Param1 help description
-        [Parameter()]
-        [Switch]
-        $Latest
-    )
-
-
-    $command = "spoon containers --csv"
+	if ($Latest)
+	{
+		$command += " --latest"
+	}
 
     $stringdata = Invoke-Expression $command
 
