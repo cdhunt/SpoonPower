@@ -80,7 +80,7 @@ function Disconnect-SpoonUser
 .EXAMPLE
    Another example of how to use this cmdlet
 #>
-function Import-SpoonImage
+function Get-SpoonImage
 {
     [CmdletBinding()]
     [OutputType([System.Management.Automation.PSCustomObject])]
@@ -111,7 +111,7 @@ function Import-SpoonImage
 .EXAMPLE
    Another example of how to use this cmdlet
 #>
-function Get-SpoonImage
+function Import-SpoonImage
 {
     [CmdletBinding()]
     [OutputType([Void])]
@@ -150,6 +150,59 @@ function Get-SpoonImage
     $stringdata = Invoke-Expression $command
 
     Write-Verbose $stringdata
+}
+
+<#
+.Synopsis
+   Short description
+.DESCRIPTION
+   Long description
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+function Start-SpoonContainer
+{
+    [CmdletBinding()]
+    [OutputType([System.Management.Automation.PSCustomObject])]
+    Param
+    (
+        # Param1 help description
+        [Parameter(Mandatory, Position=0, ValueFromPipelineByPropertyName)]
+        [string]
+        $Name,
+
+        # Param1 help description
+        [Parameter(Position=1)]
+        [string]
+        $Namespace,
+
+        # Param1 help description
+        [Parameter(Position=2)]
+        [string]
+        $Tag
+    )
+
+    $fqn = $Name
+
+    if ($PSBoundParameters.ContainsKey("Namespace"))
+    {
+        $fqn = $Namespace + '/' + $fqn
+    }
+
+    if ($PSBoundParameters.ContainsKey("Tag"))
+    {
+        $fqn = $fqn + ':' + $Tag
+    }
+
+    $command = "spoon run $fqn"
+
+    $stringdata = Invoke-Expression $command
+
+	Write-Output ([PSCustomObject]@{ContainerID = $stringdata[0]
+									ExitCode = $stringdata[1].Split(' ')[-1]}
+				 )    
 }
 
 <#
@@ -211,6 +264,3 @@ function Get-SpoonContainers
 
     $stringdata | ConvertFrom-Csv -Delimiter "`t"
 }
-
-Export-ModuleMember -Function *
-

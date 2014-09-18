@@ -28,9 +28,8 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
-    <Compile Include="Module.psd1" />
-    <Compile Include="Module.psm1" />
-    <Compile Include="Module.test.ps1" />
+    <Compile Include="SpoonPower.psd1" />
+    <Compile Include="SpoonPower.psm1" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />
